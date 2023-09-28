@@ -1,28 +1,26 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.scss';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import { render } from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
-import { UserContextPrvoider } from './context/UserContext';
-import { CategoryProvider } from './context/CategoriesContext';
-import { CartContextProvider } from './context/CartContext';
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <UserContextPrvoider>
-        <CategoryProvider>
-          <CartContextProvider>
-            <App />
-          </CartContextProvider>
-        </CategoryProvider>
-      </UserContextPrvoider>
-    </BrowserRouter>
-  </React.StrictMode>
-);
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import App from './App';
+import { store, persistor } from './store/store';
+import './index.scss';
+import { Elements } from '@stripe/react-stripe-js';
+import { stripePromise } from './utils/stripe/stripe.utils';
+const rootElement = document.getElementById('root');
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+render(
+  <React.StrictMode>
+    <Provider store={store}>
+      <PersistGate persistor={persistor}>
+        <BrowserRouter>
+          <Elements stripe={stripePromise}>
+            <App />
+          </Elements>
+        </BrowserRouter>
+      </PersistGate>
+    </Provider>
+  </React.StrictMode>,
+  rootElement
+);

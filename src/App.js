@@ -1,25 +1,46 @@
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import Navigation from "./Routes/Navigation/Navigation.components";
-import Home from "./Routes/Home/Home.components";
-import Shop from "./Routes/Shop/Shop.components";
-import Authentication from "./Routes/Authentication/Authentication.components";
-import Checkout from "./Routes/CheckOut/CheckOut.component"
-import { Route, Routes } from "react-router-dom";
-import { Fragment } from "react";
-function App() {
+import { Routes, Route } from 'react-router-dom';
+
+import {
+  onAuthStateChangedListener,
+  createUserDocumentFromAuth,
+} from './utils/firebase/firebase.utils';
+import Home from './routes/home/home.component';
+import Navigation from './routes/navigation/navigation.component';
+import Authentication from './routes/authentication/authentication.component';
+import Shop from './routes/shop/shop.component';
+import Checkout from './routes/checkout/checkout.component';
+import { setCurrentUser } from './store/user/user.reducer';
+
+const App = () => {
+  const dispatch = useDispatch();
+  console.log('process.env', process.env)
+  useEffect(() => {
+    const unsubscribe = onAuthStateChangedListener((user) => {
+      if (user) {
+        createUserDocumentFromAuth(user);
+      }
+      const pickedUser =
+        user && (({ accessToken, email, displayName }) => ({ accessToken, email, displayName }))(user);
+    
+      dispatch(setCurrentUser(pickedUser));
+    });
+
+    return unsubscribe;
+  }, []);
 
   return (
-    <Fragment>
-      <Routes>
-        <Route path="/" element={<Navigation />} >
-          <Route index={true} element={<Home />} />
-          <Route path="shop/*" element={<Shop />} />
-          <Route path="auth" element={<Authentication />} />
-          <Route path="checkout" element={<Checkout />} />
-        </Route>
-      </Routes>
-    </Fragment>
+    <Routes>
+      <Route path='/' element={<Navigation />}>
+        <Route index element={<Home />} />
+        <Route path='shop/*' element={<Shop />} />
+        <Route path='auth' element={<Authentication />} />
+        <Route path='checkout' element={<Checkout />} />
+      </Route>
+    </Routes>
   );
-}
+};
 
 export default App;
